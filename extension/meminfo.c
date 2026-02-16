@@ -196,7 +196,7 @@ void meminfo_browse_zvals_from_symbol_table(php_stream *stream, char* frame_labe
     HashPosition pos;
 
     zend_string *key;
-    zend_long index;
+    zend_ulong index;
 
     zend_hash_internal_pointer_reset_ex(p_symbol_table, &pos);
 
@@ -298,6 +298,8 @@ void meminfo_hash_dump(php_stream *stream, HashTable *ht, zend_bool is_object, H
                 break;
             case HASH_KEY_IS_LONG:
                 php_stream_printf(stream, "            \"%ld\":\"%s\"", num_key, zval_id);
+                break;
+            default:
                 break;
         }
 
