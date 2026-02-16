@@ -90,9 +90,11 @@ PHP_FUNCTION(meminfo_dump)
  */
 void meminfo_browse_exec_frames(php_stream *stream,  HashTable *visited_items, int *first_element)
 {
-    zend_execute_data *exec_frame, *prev_frame;
+    zend_execute_data *exec_frame;
+    zend_execute_data *original_execute_data;
     zend_array *p_symbol_table;
 
+    original_execute_data = EG(current_execute_data);
     exec_frame = EG(current_execute_data);
 
     char frame_label[500];
@@ -122,6 +124,8 @@ void meminfo_browse_exec_frames(php_stream *stream,  HashTable *visited_items, i
         }
         exec_frame = exec_frame->prev_execute_data;
     }
+
+    EG(current_execute_data) = original_execute_data;
 }
 
 /**
@@ -246,6 +250,11 @@ void meminfo_hash_dump(php_stream *stream, HashTable *ht, zend_bool is_object, H
             zval = Z_INDIRECT_P(zval);
         }
 
+        if (Z_TYPE_P(zval) == IS_UNDEF) {
+            zend_hash_move_forward_ex(ht, &pos);
+            continue;
+        }
+
         if (Z_ISREF_P(zval)) {
             ZVAL_DEREF(zval);
         }
@@ -309,6 +318,10 @@ void meminfo_zval_dump(php_stream * stream, char * frame_label, zend_string * sy
 
     if (Z_TYPE_P(zv) == IS_INDIRECT) {
         zv = Z_INDIRECT_P(zv);
+    }
+
+    if (Z_TYPE_P(zv) == IS_UNDEF) {
+        return;
     }
 
     if (Z_ISREF_P(zv)) {
@@ -447,7 +460,11 @@ void meminfo_build_frame_label(char* frame_label, int frame_label_len, zend_exec
     zend_object *object;
     zend_execute_data *ptr;
 
-    object = Z_OBJ(frame->This);
+    if (Z_TYPE(frame->This) == IS_OBJECT) {
+        object = Z_OBJ(frame->This);
+    } else {
+        object = NULL;
+    }
     ptr = frame->prev_execute_data;
 
     if (frame->func) {
