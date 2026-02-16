@@ -297,7 +297,7 @@ void meminfo_hash_dump(php_stream *stream, HashTable *ht, zend_bool is_object, H
 
                 break;
             case HASH_KEY_IS_LONG:
-                php_stream_printf(stream, "            \"%ld\":\"%s\"", num_key, zval_id);
+                php_stream_printf(stream, "            \"" ZEND_ULONG_FMT "\":\"%s\"", num_key, zval_id);
                 break;
             default:
                 break;
@@ -348,7 +348,7 @@ void meminfo_zval_dump(php_stream * stream, char * frame_label, zend_string * sy
 
     php_stream_printf(stream, "    \"%s\" : {\n", zval_identifier);
     php_stream_printf(stream, "        \"type\" : \"%s\",\n", zend_get_type_by_const(Z_TYPE_P(zv)));
-    php_stream_printf(stream, "        \"size\" : \"%ld\",\n", meminfo_get_element_size(zv));
+    php_stream_printf(stream, "        \"size\" : \"" ZEND_ULONG_FMT "\",\n", meminfo_get_element_size(zv));
 
     if (frame_label) {
         zend_string * escaped_frame_label;
